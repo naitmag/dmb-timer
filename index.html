@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#3b5bdb"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#3b5bdb"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest-mikhail.json"><link rel="apple-touch-icon" href="icon-192.png">
 <title>ДМБ · обратный отсчёт</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -77,7 +77,10 @@ h2:after{content:"";flex:1;height:1px;background:var(--line)}
 .a i{font-style:normal;font-size:24px;width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--acc2) 22%,transparent)}
 .a b{display:block;font:600 13px var(--sans)}.a span{font-size:11px;color:var(--mut)}
 .a.lock{opacity:.45}.a.lock i{background:var(--line)}
-.d.ev{position:relative;border-color:var(--acc2)}.d.ev:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--acc2)}
+.d.ev{position:relative;border-color:var(--ev)}.d.ev:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--ev)}
+.e-h{--ev:#9b5de5}.e-m{--ev:#14b8a6}.e-b{--ev:#ec4899}
+.pwa{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font:14px var(--sans);z-index:25;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.pwa span{flex:1}.pwa button{border:0;border-radius:8px;padding:8px 12px;font:600 13px var(--sans);cursor:pointer;background:var(--acc);color:#fff}.pwa #pwax{background:none;color:inherit;padding:8px}
 .l100{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
 .l100 div{aspect-ratio:1;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--card);font:700 16px var(--hd);position:relative}
 .l100 .x{color:var(--mut);opacity:.5}.l100 .x:after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1px),var(--mut) 50%,transparent calc(50% + 1px))}
@@ -110,9 +113,10 @@ body.last100{--acc:#e0622b}
 
   <h2>Календарь</h2>
   <div class="scroll"><div class="cal" id="cal"></div></div>
-  <div class="legend">× прожито · синий — сегодня · оранжевый — выход на гражданку</div></div>
+  <div class="legend">× прожито · синий — сегодня · оранжевый — выход на гражданку<br><span style="color:#ec4899">●</span> дни рождения · <span style="color:#9b5de5">●</span> праздники · <span style="color:#14b8a6">●</span> вехи пути</div></div>
   <div id="cmp" hidden><h2>Гонка к дембелю</h2><div id="cbars"></div><h2>Мы в цифрах</h2><div class="facts" id="cfacts"></div></div>
   <nav class="nav" id="nav"></nav>
+  <div class="pwa" id="pwa" hidden><span id="pwat"></span><button id="pwab">Установить</button><button id="pwax" title="Закрыть">✕</button></div>
 </div>
 
 
@@ -145,7 +149,7 @@ function buildCal(){
   let h='';
   for(let d=new Date(S);d<=E;d.setDate(d.getDate()+1)){
     const c=+d===+E?'last':+d<+t?'done':+d===+t?'today':'';
-    const k=EV[d.toDateString()];h+='<div class="d '+c+(k?' ev':'')+'" title="'+d.toLocaleDateString('ru-RU')+(k?' — '+k:'')+'"></div>';
+    const k=EV[d.toDateString()],tp=EV[d.toDateString()+'#'];h+='<div class="d '+c+(k&&c!=='last'?' ev e-'+tp:'')+'" title="'+d.toLocaleDateString('ru-RU')+(k?' — '+k:'')+'"></div>';
   }
   $('#cal').innerHTML=h;
 }
@@ -180,11 +184,11 @@ function tick(){
   $('#facts').innerHTML=F.map(f=>'<div class="f"><b>'+f[0].toLocaleString('ru-RU')+'</b><span>'+f[1]+'</span></div>').join('');
 }
 function init(){buildCal();tick()}
-const BD=[]; // дни рождения: ['Имя',месяц,день]
-function events(S,E){const m={},sh=(b,n)=>{const x=new Date(b);x.setDate(x.getDate()+n);return x},add=(d,t)=>{if(d<S||d>E)return;const k=d.toDateString();m[k]=m[k]?m[k]+' · '+t:t};
-  for(let y=S.getFullYear();y<=E.getFullYear();y++){[[0,1,'Новый год'],[1,23,'23 февраля'],[2,8,'8 марта'],[4,9,'День Победы']].forEach(h=>add(new Date(y,h[0],h[1]),h[2]));BD.forEach(b=>add(new Date(y,b[1]-1,b[2]),'День рождения: '+b[0]))}
+const BD=[['Михаил',6,11],['Антон',3,11],['Влад',5,7],['Гусейн',2,18]]; // [имя, месяц, день]
+function events(S,E){const m={},sh=(b,n)=>{const x=new Date(b);x.setDate(x.getDate()+n);return x},add=(d,t,c)=>{if(d<S||d>E)return;const k=d.toDateString();m[k]=m[k]?m[k]+' · '+t:t;if(c==='b'||!m[k+'#'])m[k+'#']=c};
+  for(let y=S.getFullYear();y<=E.getFullYear();y++){[[0,1,'Новый год'],[1,23,'23 февраля'],[2,8,'8 марта'],[4,9,'День Победы']].forEach(h=>add(new Date(y,h[0],h[1]),h[2],'h'));BD.forEach(b=>add(new Date(y,b[1]-1,b[2]),'🎂 День рождения: '+b[0],'b'))}
   const dd=Math.round((E-S)/864e5);
-  add(sh(S,100),'100 дней службы позади');add(sh(S,Math.round(dd/2)),'Полпути пройдено');add(sh(E,-100),'100 дней до дембеля');add(sh(E,-30),'Последний месяц');add(sh(E,-7),'Последняя неделя');add(E,'ДМБ!');
+  add(sh(S,100),'100 дней службы позади','m');add(sh(S,Math.round(dd/2)),'Полпути пройдено','m');add(sh(E,-100),'100 дней до дембеля','m');add(sh(E,-30),'Последний месяц','m');add(sh(E,-7),'Последняя неделя','m');add(E,'ДМБ!','m');
   return m}
 const ACH=[['🪖','Первая неделя','7 дней позади',s=>s.served>=7],['📅','Первый месяц','30 дней позади',s=>s.served>=30],['💯','Сто дней позади','100 дней службы',s=>s.served>=100],['🌗','Полпути','50% пройдено',s=>s.pct>=50],['🎖️','Первые полгода','182 дня службы',s=>s.served>=182],['🔥','Последние сто','меньше 100 дней',s=>s.left<=100],['⏳','Последний месяц','меньше 30 дней',s=>s.left<=30],['🧳','Последняя неделя','меньше 7 дней',s=>s.left<=7],['🏁','ДМБ!','свобода',s=>s.left<=0]];
 function extras(S,now,rem,pct){const left=Math.max(0,Math.ceil(rem/864e5)),st={served:Math.max(0,Math.floor((now-S)/864e5)),left,pct};
@@ -227,16 +231,25 @@ function go(h){
   const cmp=view==='compare';
   if(!cmp)cfg=P.find(p=>p.id===view);
   $('#solo').hidden=cmp;$('#cmp').hidden=!cmp;$('#sh').hidden=cmp;if(cmp)document.body.classList.remove('last100');
+  try{localStorage.setItem('dmb-view',view)}catch(x){}
+  const ml=document.querySelector('link[rel=manifest]');if(ml)ml.href='manifest-'+view+'.json';
   document.title=cmp?'ДМБ · сравнение':'ДМБ · '+cfg.name;
   nav();
   if(cmp)renderCmp();else init();
 }
+const SA=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+let dp=null,fr=false;try{fr=window.top!==window}catch(e){fr=true}
+const pwa={show(){let d='';try{d=localStorage.getItem('dmb-pwa')}catch(e){}if(SA||fr||d)return;const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);if(!dp&&!ios)return;$('#pwat').textContent=dp?'Установи как приложение — откроется сразу на нужной вкладке':'Чтобы установить: «Поделиться» → «На экран Домой»';$('#pwab').hidden=!dp;$('#pwa').hidden=false}};
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;pwa.show()});
+addEventListener('appinstalled',()=>{$('#pwa').hidden=true});
+$('#pwab').onclick=async()=>{if(!dp)return;dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$('#pwa').hidden=true};
+$('#pwax').onclick=()=>{$('#pwa').hidden=true;try{localStorage.setItem('dmb-pwa','1')}catch(e){}};
 let ck=0;$('#days').onclick=()=>{if(++ck>=5){ck=0;confetti()}};$('#sh').onclick=share;
 $('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;go(b.dataset.v);try{location.hash=b.dataset.v}catch(x){}};
 
 $('#th').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('dmb-theme',r.dataset.theme)}catch(e){}};
 window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
-go(location.hash.slice(1));
+{let sv='';try{sv=localStorage.getItem('dmb-view')||''}catch(e){}const h0=location.hash.slice(1);go(SA?(sv||h0):(h0||sv));pwa.show()}
 try{if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 setInterval(tick,1000);
 </script>
