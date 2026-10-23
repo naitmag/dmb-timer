@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ДМБ · обратный отсчёт</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{--bg:#f5f5f3;--card:#ffffff;--ink:#16181d;--mut:#6b7080;--acc:#3b5bdb;--acc2:#e8923a;--line:#e2e3e8;
+--hd:"Oswald","Arial Narrow",Impact,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#171a20;--ink:#eceef3;--mut:#8b91a1;--acc:#7c9cff;--acc2:#f0a55a;--line:#262a33;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#171a20;--ink:#eceef3;--mut:#8b91a1;--acc:#7c9cff;--acc2:#f0a55a;--line:#262a33;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh;
+}
+.wrap{max-width:900px;margin:0 auto;padding:20px 18px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;font:600 12px var(--mono);letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+.top b{color:var(--acc)}
+.btns button{font:600 12px var(--mono);background:none;border:1px solid var(--line);color:var(--mut);padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:6px}
+.btns button:hover{color:var(--ink);border-color:var(--mut)}
+.hero{margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden}
+.hero:before{content:"★";position:absolute;right:-18px;top:-34px;font-size:190px;color:var(--acc);opacity:.07;line-height:1}
+.who{font:600 13px var(--mono);letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+.days{font:700 clamp(96px,26vw,210px)/.9 var(--hd);letter-spacing:-.01em;margin:10px 0 0;color:var(--ink)}
+.dl{font:500 clamp(18px,4vw,26px) var(--hd);letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+.hms{display:flex;gap:10px;margin-top:22px;font-family:var(--mono)}
+.hms div{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+.hms b{display:block;font-size:clamp(22px,6vw,34px);font-weight:600}
+.hms span{font-size:11px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase}
+.phrase{margin:18px 2px 0;font-size:15px;color:var(--mut);font-style:italic;min-height:1.5em}
+h2{font:500 15px var(--hd);letter-spacing:.22em;text-transform:uppercase;color:var(--mut);margin:34px 0 12px;display:flex;align-items:center;gap:10px}
+h2:after{content:"";flex:1;height:1px;background:var(--line)}
+.bar{height:16px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
+.fill{height:100%;width:0;background:var(--acc);border-radius:99px;transition:width 1s}
+.pr{display:flex;justify-content:space-between;margin-top:10px;font:600 13px var(--mono);color:var(--mut)}
+.pr b{color:var(--ink)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.f{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.f b{display:block;font:700 34px var(--hd);color:var(--ink)}
+.f span{font-size:13px;color:var(--mut)}
+.f:nth-child(3n+1) b{color:var(--acc)}
+.f:nth-child(5n) b{color:var(--acc2)}
+.scroll{overflow-x:auto}
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(16px,1fr));gap:4px}
+.d{aspect-ratio:1;border-radius:4px;border:1px solid var(--line);background:var(--card)}
+.d.done{border-color:var(--mut);background:linear-gradient(to top right,transparent calc(50% - 1px),var(--mut) 50%,transparent calc(50% + 1px)),linear-gradient(to bottom right,transparent calc(50% - 1px),var(--mut) 50%,transparent calc(50% + 1px)),var(--card);opacity:.55}
+.d.today{background:var(--acc);border-color:var(--acc);animation:p 1.6s infinite}
+.d.last{border-color:var(--acc2);background:var(--acc2)}
+@keyframes p{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 30%,transparent)}}
+.legend{margin-top:10px;font:12px var(--mono);color:var(--mut)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+.ov.on{display:flex}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:380px}
+.box h3{margin:0 0 14px;font:700 24px var(--hd);letter-spacing:.05em;text-transform:uppercase}
+.box label{display:block;font:600 12px var(--mono);color:var(--mut);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.08em}
+.box input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px var(--sans)}
+.box .go{margin-top:18px;width:100%;padding:12px;border:0;border-radius:10px;background:var(--acc);color:#fff;font:600 15px var(--sans);cursor:pointer}
+.err{color:#c0453a;font-size:13px;margin-top:8px;min-height:1em}
+[hidden]{display:none!important}
+.nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font:600 12px var(--mono);letter-spacing:.08em}
+.nav button{background:none;border:0;border-bottom:1px solid transparent;color:var(--mut);font:inherit;letter-spacing:inherit;padding:2px 0;cursor:pointer;opacity:.7}
+.nav button:hover{opacity:1}
+.nav button.on{color:var(--ink);opacity:1;border-color:var(--acc)}
+.cr{margin-bottom:18px}
+.cn{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.cn b{font:700 22px var(--hd);letter-spacing:.03em}
+.cn span{font:600 12px var(--mono);color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span>ДМБ <b>·</b> обратный отсчёт</span><span class="btns"><button id="th" title="Тема">◐</button></span></div>
+  <div id="solo"><section class="hero">
+    <div class="who" id="who">Рядовой запаса (почти)</div>
+    <div class="days" id="days">0</div>
+    <div class="dl" id="dl">дней до дембеля</div>
+    <div class="hms"><div><b id="hh">00</b><span>часов</span></div><div><b id="mm">00</b><span>минут</span></div><div><b id="ss">00</b><span>секунд</span></div></div>
+    <p class="phrase" id="phrase"></p>
+  </section>
+
+  <h2>Служба пройдена</h2>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+  <div class="pr"><span>Статус: <b id="rank">—</b></span><b id="pct">0%</b></div>
+
+  <h2>Что ещё предстоит</h2>
+  <div class="facts" id="facts"></div>
+
+  <h2>Календарь</h2>
+  <div class="scroll"><div class="cal" id="cal"></div></div>
+  <div class="legend">× прожито · синий — сегодня · оранжевый — выход на гражданку</div></div>
+  <div id="cmp" hidden><h2>Гонка к дембелю</h2><div id="cbars"></div><h2>Мы в цифрах</h2><div class="facts" id="cfacts"></div></div>
+  <nav class="nav" id="nav"></nav>
+</div>
+
+
+
+<script>
+const $=s=>document.querySelector(s), KEY='dmb-v1';
+const P=[{id:'mikhail',name:'Михаил',start:'2026-10-28',end:'2027-10-28'},{id:'anton',name:'Антон',start:'2026-10-27',end:'2027-10-27'},{id:'vlad',name:'Влад',start:'2026-10-30',end:'2027-10-30'},{id:'huseyn',name:'Гусейн',start:'2026-09-21',end:'2027-09-21'}];
+let cfg=P[0],view='mikhail';
+try{const t=localStorage.getItem('dmb-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const pl=(n,a,b,c)=>{n=Math.abs(n);const m=n%100,k=n%10;if(m>10&&m<20)return c;if(k>1&&k<5)return b;if(k===1)return a;return c};
+const p2=n=>String(n).padStart(2,'0');
+const phrases=[
+"Устав не запрещает считать дни. Устав вообще молчит.",
+"Каждый подъём — это на один подъём меньше. Математика на твоей стороне.",
+"Время идёт, даже когда стоишь в наряде. Особенно когда стоишь в наряде.",
+"Ты уже ближе к гражданке, чем к присяге.",
+"Командование докладывает: ситуация под контролем, дембель неизбежен.",
+"Терпение — это когда ты ещё не дембель, но уже планируешь первый нормальный бургер.",
+"Скоро будильник будет только по твоему желанию.",
+"Задача на сегодня: пережить день и вычеркнуть клеточку.",
+"Враг не пройдёт, а срок пройдёт. Проверено.",
+"Через это проходили миллионы. Ты — просто следующий в очереди на свободу.",
+"Выдержка, спокойствие и чай с сахаром. Дальше — только гражданка.",
+"Боевая задача выполняется. Дембель — вопрос времени, а время работает на тебя."];
+function rank(p){return p>=100?'ДМБ! Свобода':p>=95?'Дембель на низком старте':p>=70?'Дед':p>=45?'Черпак':p>=20?'Слон':'Дух'}
+function buildCal(){
+  const S=pd(cfg.start),E=pd(cfg.end),now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let h='';
+  for(let d=new Date(S);d<=E;d.setDate(d.getDate()+1)){
+    const c=+d===+E?'last':+d<+t?'done':+d===+t?'today':'';
+    h+='<div class="d '+c+'" title="'+d.toLocaleDateString('ru-RU')+'"></div>';
+  }
+  $('#cal').innerHTML=h;
+}
+function tick(){
+  if(view==='compare'){renderCmp();return}
+  const S=pd(cfg.start),E=pd(cfg.end),now=new Date();
+  const rem=E-now,total=E-S;
+  let pct=Math.min(100,Math.max(0,(now-S)/total*100));
+  $('#fill').style.width=pct+'%';
+  $('#pct').textContent=pct.toFixed(2).replace('.',',')+'%';
+  $('#rank').textContent=rank(pct);
+  $('#who').textContent=(cfg.name?cfg.name+' · ':'')+'ДМБ '+E.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  $('#phrase').textContent=rem<=0?'Приказ выполнен. Снимай форму, добро пожаловать домой!':phrases[Math.floor(Date.now()/864e5)%phrases.length];
+  if(rem<=0){$('#days').textContent='0';$('#dl').textContent='ты свободен';['hh','mm','ss'].forEach(i=>$('#'+i).textContent='00');$('#facts').innerHTML='';return}
+  const d=Math.floor(rem/864e5),h=Math.floor(rem/36e5)%24,m=Math.floor(rem/6e4)%60,s=Math.floor(rem/1e3)%60;
+  $('#days').textContent=d;$('#dl').textContent=pl(d,'день','дня','дней')+' до дембеля';
+  $('#hh').textContent=p2(h);$('#mm').textContent=p2(m);$('#ss').textContent=p2(s);
+  const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let n=0,we=0,mon=0;
+  for(const x=new Date(t);x<E;x.setDate(x.getDate()+1)){n++;const g=x.getDay();if(g===0||g===6)we++;if(g===1)mon++}
+  const hrs=Math.floor(rem/36e5);
+  const F=[
+   [n,pl(n,'подъём','подъёма','подъёмов')+' до свободы'],
+   [n,pl(n,'обед','обеда','обедов')+' (ужинов — столько же)'],
+   [n,pl(n,'отбой','отбоя','отбоев')],
+   [we,pl(we,'выходной','выходных','выходных')+' (Сб и Вс)'],
+   [mon,pl(mon,'понедельник','понедельника','понедельников')+' — самое неприятное'],
+   [n*8,'часов сна при честных 8 в сутки'],
+   [Math.floor(hrs/.75),'серий сериала по 45 минут, если смотреть без перерыва'],
+   [Math.floor(rem/6048e5*10)/10,'недель осталось (ну почти пара месяцев)']];
+  F[7]=[Math.ceil(rem/6048e5),pl(Math.ceil(rem/6048e5),'неделя','недели','недель')+' в сумме'];
+  $('#facts').innerHTML=F.map(f=>'<div class="f"><b>'+f[0].toLocaleString('ru-RU')+'</b><span>'+f[1]+'</span></div>').join('');
+}
+function init(){buildCal();tick()}
+function renderCmp(){
+  const now=new Date(),D=864e5,f=d=>d.toLocaleDateString('ru-RU');
+  const R=P.map(p=>{const S=pd(p.start),E=pd(p.end);return{p,S,E,left:Math.max(0,Math.ceil((E-now)/D)),served:Math.max(0,Math.floor((now-S)/D)),pct:Math.min(100,Math.max(0,(now-S)/(E-S)*100))}}).sort((a,b)=>a.E-b.E);
+  $('#cbars').innerHTML=R.map(r=>'<div class="cr"><div class="cn"><b>'+r.p.name+'</b><span>'+r.left+' '+pl(r.left,'день','дня','дней')+' · '+f(r.E)+'</span></div><div class="bar"><div class="fill" style="width:'+r.pct+'%"></div></div><div class="pr"><span>'+rank(r.pct)+'</span><b>'+r.pct.toFixed(1).replace('.',',')+'%</b></div></div>').join('');
+  const a=R[0],z=R[R.length-1],gap=Math.round((z.E-a.E)/D),sum=R.reduce((s,r)=>s+r.left,0);
+  const old=R.slice().sort((x,y)=>y.served-x.served)[0],fresh=R.filter(r=>r.S>now).length,me=P[0],mE=pd(me.end);
+  const F=[[a.p.name,'уходит домой первым · '+f(a.E)],[z.p.name,'выйдет последним · '+f(z.E)],[gap,pl(gap,'день','дня','дней')+' между первым и последним дембелем'],[sum,'дней осталось на всех вместе'],[old.served,pl(old.served,'день','дня','дней')+' уже отслужил '+old.p.name+' — старший по призыву'],[fresh,'из нас ещё на гражданке — призыв впереди'],[Math.max(0,Math.ceil((z.E-now)/D)),'дней до общего сбора на гражданке · '+f(z.E)]];
+  P.slice(1).forEach(p=>{const d=Math.round((pd(p.end)-mE)/D),k=Math.abs(d);F.push([d===0?'0':(d<0?'−':'+')+k,d===0?p.name+' и '+me.name+' — дембель в один день':pl(k,'день','дня','дней')+' · '+p.name+(d<0?' раньше ':' позже ')+'Михаила'])});
+  $('#cfacts').innerHTML=F.map(x=>'<div class="f"><b>'+x[0].toLocaleString('ru-RU')+'</b><span>'+x[1]+'</span></div>').join('');
+}
+function nav(){$('#nav').innerHTML=P.map(p=>'<button data-v="'+p.id+'" class="'+(view===p.id?'on':'')+'">'+p.name+'</button>').join('')+'<button data-v="compare" class="'+(view==='compare'?'on':'')+'">сравнение</button>'}
+function go(h){
+  if(h==='compare'||P.some(p=>p.id===h))view=h;
+  const cmp=view==='compare';
+  if(!cmp)cfg=P.find(p=>p.id===view);
+  $('#solo').hidden=cmp;$('#cmp').hidden=!cmp;
+  document.title=cmp?'ДМБ · сравнение':'ДМБ · '+cfg.name;
+  nav();
+  if(cmp)renderCmp();else init();
+}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;go(b.dataset.v);try{location.hash=b.dataset.v}catch(x){}};
+
+$('#th').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('dmb-theme',r.dataset.theme)}catch(e){}};
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+go(location.hash.slice(1));
+setInterval(tick,1000);
+</script>
+</body>
+</html>
